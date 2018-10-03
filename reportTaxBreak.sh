@@ -77,9 +77,6 @@ main()
   copyChangedFilesWithHierarchyFromRevision ${revisionToSave} ${taxBreakDirFullPath}
   compressDir ${taxBreakDirFullPath} ${taxBreakMainFolder} ${taxBreakDir}
   removeDir ${taxBreakDirFullPath}
-
-  echo "rev: ${revisionToSave}" 
-  echo "repo: ${repoUrl}"
   printDescriptionInfo "${repoUrl}" "${revisionToSave}"
 }
 
