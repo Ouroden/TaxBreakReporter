@@ -1,54 +1,6 @@
 #!/bin/bash
-
-function ensureDirExist()
-{
-  local dir=$1
-  mkdir -p ${dir}
-}
-
-function createDir()
-{
-  local dir=$1
-  mkdir ${dir}
-}
-
-function createDiffFromRevision()
-{
-  local revision=$1
-  local diffPath=$2
-  svn diff -c ${revision} > ${diffPath}
-}
-
-function createInfoFromRevision()
-{
-  local revision=$1
-  local infoPath=$2
-  svn info -r ${revision} > ${infoFile}
-  svn diff -c ${revision} --summarize >> ${infoFile}
-}
-
-function copyChangedFilesWithHierarchyFromRevision()
-{
-  local revision=$1
-  local outputDir=$2
-  svn diff -c ${revision} --summarize | awk -F' ' '{ print $2 }' | xargs -I % cp -r --parents % ${outputDir}/
-}
-
-function compressDir()
-{
-  local compressedDirFullPath="${1}.tar.gz"
-  local targetDirParentDir=$2
-  local targetDirName=$3
-  tar -zcf ${compressedDirFullPath} -C ${targetDirParentDir} ${targetDirName}
-  sync
-  printf "Generated: ${compressedDirFullPath} successfully.\\n"
-}
-
-function removeDir()
-{
-  local dir=$1
-  rm -r ${dir}
-}
+. $(dirname $(readlink -f $0))/dirFunctions.sh
+. $(dirname $(readlink -f $0))/svnFunctions.sh
 
 function printDescriptionInfo()
 {
