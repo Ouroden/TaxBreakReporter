@@ -2,11 +2,13 @@ Tool for TaxBreak raport generation
 
 Creates taxbreak tar file in ~/TaxBreak/
 If ~/TaxBreak dir does not exists, it will be created.
+Use this script from repository root.
+
 
 Tar contains:
- - diff
- - revision info
- - files that have changed with preserved hierarchy 
+  - diff
+  - revision info
+  - files that have changed with preserved hierarchy 
 
 Usage: reportTaxBreak.sh [revisionNumber] 
 
