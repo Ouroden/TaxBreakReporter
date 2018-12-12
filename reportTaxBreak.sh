@@ -6,7 +6,7 @@ function printDescriptionInfo()
 {
   local repositorium=$1
   local revision=$2
-  printf "\\nDescription info:\\nRepozytorium ${repositorium}. Rewizja: r${revision}\\n"
+  printf "\\nDescription info:\\nRepozytorium ${repositorium}. Rewizja: ${revision}\\n"
 }
 
 main()
@@ -17,7 +17,7 @@ main()
   repoUrl=$(svn info 2> /dev/null | grep ^URL)
   repo=$(echo "$repoUrl" | grep -oP '(?<=svnroot/).*?(?=/)')
   branch=$(echo "$repoUrl" | grep -oP '\w+$')
-  taxBreakDir="${formatedDate}-${repo}-${branch}-r${revisionToSave}"
+  taxBreakDir="${formatedDate}-${repo}-${branch}-${revisionToSave}"
   taxBreakDirFullPath="${taxBreakMainFolder}/${taxBreakDir}"
   diffFile="${taxBreakDirFullPath}/${repo}-${branch}-${revisionToSave}.diff"
   infoFile="${taxBreakDirFullPath}/${repo}-${branch}-${revisionToSave}.info"
