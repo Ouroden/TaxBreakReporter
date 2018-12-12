@@ -5,7 +5,7 @@ main()
   currentMonthStart=$(date +"%Y-%m-01")
   currentMonthName=$(date +"%B")
 
-  commitsList=($(svn log -r \{${currentMonthStart}\}:HEAD | ag ${USER} | awk '{print $1}'))
+  commitsList=($(svn log -r \{${currentMonthStart}\}:HEAD | grep ${USER} | awk '{print $1}'))
   
   for commit in "${commitsList[@]}"; do 
     svn log -c ${commit}

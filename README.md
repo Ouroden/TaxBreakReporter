@@ -21,7 +21,7 @@ Future work:
   - argument and error check
   - git support
 
-Use findCommits.sh to find all your commits from this month in nice report.
+Use findCommits.sh to find all your commits from current month in nice format.
 
 
 Pull request are more then welcome!
