@@ -10,15 +10,18 @@ Tar contains:
   - revision info
   - files that have changed with preserved hierarchy 
 
-Usage: reportTaxBreak.sh [revisionNumber] 
+Usage: reportTaxBreak.sh <revision> 
 
 Example:
-  reportTaxBreak.sh 979131
+  reportTaxBreak.sh r979131
 
 Future work:
   - support for multiple commits in one tar
   - help, usage
   - argument and error check
+  - git support
+
+Use findCommits.sh to find all your commits from this month in nice report.
 
 
 Pull request are more then welcome!
