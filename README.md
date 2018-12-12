@@ -10,7 +10,7 @@ Tar contains:
   - revision info
   - files that have changed with preserved hierarchy 
 
-Usage: reportTaxBreak.sh <revision> 
+Usage: reportTaxBreak.sh [revision]
 
 Example:
   reportTaxBreak.sh r979131
