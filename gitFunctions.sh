@@ -17,9 +17,9 @@ function copyChangedFilesWithHierarchyFromRevision()
   local revision=$1
   local outputDir=$2
   local oldBranchName=$(getBranch)
-  git co ${revision}
+  git checkout ${revision}
   git diff-tree  --name-status --no-commit-id -r ${revision} | grep -v "^D" | awk -F' ' '{ print $2 }' | xargs -I % cp -r --parents % ${outputDir}/
-  git co ${oldBranchName}
+  git checkout ${oldBranchName}
 }
 
 function getRepo()
