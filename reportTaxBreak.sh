@@ -1,6 +1,115 @@
 #!/bin/bash
 . $(dirname $(readlink -f $0))/dirFunctions.sh
-. $(dirname $(readlink -f $0))/svnFunctions.sh
+
+function usage()
+{
+  echo ""
+  echo "This tool lets you:"
+  echo "    - generate TaxBreak archive"
+  echo "Usage: $0  -r REVISION [-t|-z] [-a] [-m] [-v] [-h]"
+  echo "Main arguments:"
+  echo "    -r, --revision"
+  echo "                      specify revision to process"
+  echo "                      use multiple times to include multiple commits in one archive"
+  echo "Compression arguments:"
+  echo "    -t, --tar"
+  echo "                      compress with tar, generates .tar.gz archive, default method"
+  echo "    -z, --zip"
+  echo "                      compress with zip, generates .zip archive"
+  echo "Format and location arguments:"
+  echo "    -a, --archivename"
+  echo "                      specify custom archive name"
+  echo "    -m, --taxbreakdir"
+  echo "                      specify main TaxBreak dir, default=${HOME}/TaxBreak"
+  echo "Miscellaneous arguments:"
+  echo "    -v, --verbose"
+  echo "                      print additional logs"
+  echo "    -h, --help"
+  echo "                      show this help message and exit"
+}
+
+function log_info()
+{
+  if [[ $verbose ]]; then printf "$1\n"; fi
+}
+
+function log_error()
+{
+  printf "Error: $0: $1\n"
+}
+
+function checkVersionControl()
+{
+  if (( $(isCurrentDirUnderSvn) )); then 
+    log_info "Found SVN repository"
+    . $(dirname $(readlink -f $0))/svnFunctions.sh;
+  elif (( $(isCurrentDirUnderGit) )); then
+    log_info "Found GIT repository"
+    . $(dirname $(readlink -f $0))/gitFunctions.sh;
+  else
+    log_error "Directory ${PWD} is not under version control"
+    exit 1
+  fi
+}
+
+function parse_arguments()
+{
+  OPTS=$(getopt -o vhr:tza:m --long verbose,help,revision:,tar,zip,archivename:,taxbreakdir -n 'parse-options' -- "$@")
+  if [ $? != 0 ] ; then log_error "Parsing options failed." >&2 ; exit 1 ; fi
+
+  eval set -- "$OPTS"
+
+  while true; do
+    case "$1" in
+      -h | --help        ) usage && exit 1 ;;
+      -v | --verbose     ) verbose=1; shift ;;
+      -r | --revision    ) revisionsToSave+=("$2"); shift 2 ;;
+      -t | --tar         ) useTar=1; shift ;;
+      -z | --zip         ) useZip=1; shift ;;
+      -a | --archivename ) archivename="$2"; shift 2 ;;
+      -m | --taxbreakdir ) taxBreakMainFolder="$2"; shift 2 ;;
+      -- ) shift; break ;;
+      * ) break ;;
+    esac
+  done
+
+  log_info "Flags:"
+  log_info "verbose:${verbose}"
+  log_info "revisions:${revisionsToSave[*]}"
+  log_info "useTar:${useTar}"
+  log_info "useZip:${useZip}"
+  log_info "archivename:${archivename}"
+  log_info "taxbreakdir:${taxBreakMainFolder}\n"
+
+  if [ -z "$revisionsToSave" ]; then
+    log_error "No revision is picked."
+    usage && exit 1
+  fi
+  revisionToSave="${revisionsToSave[0]}"
+
+  if (( useTar )) && (( useZip )); then
+    log_error "Pick only one compression type at the time"
+    usage && exit 1
+  fi
+
+  if [ -z "$archivename" ]; then
+    currentMonth="$(date +"%Y-%m")"
+    branchPrefix=$(getRepo)-$(getBranch)
+    archiveName="${currentMonth}-${branchPrefix}-${revisionToSave}"
+    log_info "Using default archivename:${archiveName}"
+  fi
+
+  if [ -z "$taxBreakMainFolder" ]; then
+    taxBreakMainFolder="${HOME}/TaxBreak"
+    log_info "Using default taxbreakdir:${taxBreakMainFolder}\n"
+  fi
+
+  taxBreakDirFullPath="${taxBreakMainFolder}/${archiveName}"
+  targetArchiveFullPath="${taxBreakMainFolder}/${archiveName}"
+
+  diffFile="${taxBreakDirFullPath}/${archiveName}.diff"
+  infoFile="${taxBreakDirFullPath}/${archiveName}.info"
+}
 
 function printDescriptionInfo()
 {
@@ -9,27 +118,24 @@ function printDescriptionInfo()
   printf "\\nDescription info:\\nRepozytorium ${repositorium}. Rewizja: ${revision}\\n"
 }
 
+function compressTaxBreakDir()
+{
+  if (( useZip )); then compressDirWithZip $1 $2; else compressDirWithTar $1 $2; fi
+}
+
 main()
 {
-  taxBreakMainFolder="${HOME}/TaxBreak"
-  revisionToSave=$1
-  formatedDate="$(date +"%Y-%m")"
-  repoUrl=$(svn info 2> /dev/null | grep ^URL)
-  repo=$(echo "$repoUrl" | grep -oP '(?<=svnroot/).*?(?=/)')
-  branch=$(echo "$repoUrl" | grep -oP '\w+$')
-  taxBreakDir="${formatedDate}-${repo}-${branch}-${revisionToSave}"
-  taxBreakDirFullPath="${taxBreakMainFolder}/${taxBreakDir}"
-  diffFile="${taxBreakDirFullPath}/${repo}-${branch}-${revisionToSave}.diff"
-  infoFile="${taxBreakDirFullPath}/${repo}-${branch}-${revisionToSave}.info"
+  checkVersionControl
+  parse_arguments "$@"
 
   ensureDirExist ${taxBreakMainFolder}
   createDir ${taxBreakDirFullPath}
   createDiffFromRevision ${revisionToSave} ${diffFile}
   createInfoFromRevision ${revisionToSave} ${infoFile}
   copyChangedFilesWithHierarchyFromRevision ${revisionToSave} ${taxBreakDirFullPath}
-  compressDir ${taxBreakDirFullPath} ${taxBreakMainFolder} ${taxBreakDir}
+  compressTaxBreakDir ${taxBreakDirFullPath} ${targetArchiveFullPath}
   removeDir ${taxBreakDirFullPath}
-  printDescriptionInfo "${repoUrl}" "${revisionToSave}"
+  printDescriptionInfo "$(getRepoUrl)" "${revisionToSave}"
 }
 
 main "$@"

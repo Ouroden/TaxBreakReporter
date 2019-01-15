@@ -20,3 +20,17 @@ function copyChangedFilesWithHierarchyFromRevision()
   svn diff -c ${revision} --summarize | awk -F' ' '{ print $2 }' | xargs -I % cp -r --parents % ${outputDir}/
 }
 
+function getRepoUrl()
+{
+  echo $(svn info 2> /dev/null | grep ^URL)
+}
+
+function getRepo()
+{
+  echo $(getRepoUrl) | grep -oP '(?<=svnroot/).*?(?=/)'
+}
+
+function getBranch()
+{
+  echo $(getRepoUrl) | grep -oP '\w+$'
+}
