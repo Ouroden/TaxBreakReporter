@@ -30,11 +30,21 @@ function compressDir()
   startingPwd=${PWD}
   cd ${sourceDirParent}
 
+  command -v ${compressCommand} &> /dev/null
+  if [[ $? -ne 0 ]]; then
+    printf "Unable to generate ${targetArchiveFullPath}: ${compressCommand} is not available\\n"
+    return
+  fi
+
   ${compressCommand} ${targetArchiveFullPath} ${sourceDir} > /dev/null
-  sync
+  if [[ $? -ne 0 ]]; then
+    printf "Unable to generate ${targetArchiveFullPath}\\n"
+  else
+    printf "Generated: ${targetArchiveFullPath} successfully.\\n"
+    sync
+  fi
 
   cd ${startingPwd}
-  printf "Generated: ${targetArchiveFullPath} successfully.\\n"
 }
 
 function compressDirWithTar()
