@@ -66,7 +66,7 @@ function parse_arguments()
       -r | --revision    ) revisionsToSave+=("$2"); shift 2 ;;
       -t | --tar         ) useTar=1; shift ;;
       -z | --zip         ) useZip=1; shift ;;
-      -a | --archivename ) archivename="$2"; shift 2 ;;
+      -a | --archivename ) archiveName="$2"; shift 2 ;;
       -m | --taxbreakdir ) taxBreakMainFolder="$2"; shift 2 ;;
       -- ) shift; break ;;
       * ) break ;;
@@ -78,7 +78,7 @@ function parse_arguments()
   log_info "revisions:${revisionsToSave[*]}"
   log_info "useTar:${useTar}"
   log_info "useZip:${useZip}"
-  log_info "archivename:${archivename}"
+  log_info "archivename:${archiveName}"
   log_info "taxbreakdir:${taxBreakMainFolder}\n"
 
   if [ -z "$revisionsToSave" ]; then
@@ -92,13 +92,11 @@ function parse_arguments()
     usage && exit 1
   fi
 
-  if [ -z "$archivename" ]; then
+  if [ -z "$archiveName" ]; then
     currentMonth="$(date +"%Y-%m")"
     branchPrefix=$(getRepo)-$(getBranch)
     archiveName="${currentMonth}-${branchPrefix}-${revisionToSave}"
     log_info "Using default archivename:${archiveName}"
-  else
-    archiveName=${archivename}
   fi
 
   if [ -z "$taxBreakMainFolder" ]; then
@@ -123,6 +121,7 @@ function printDescriptionInfo()
 function compressTaxBreakDir()
 {
   if (( useZip )); then compressDirWithZip $1 $2; else compressDirWithTar $1 $2; fi
+  return $?
 }
 
 main()
@@ -135,7 +134,7 @@ main()
   createDiffFromRevision ${revisionToSave} ${diffFile}
   createInfoFromRevision ${revisionToSave} ${infoFile}
   copyChangedFilesWithHierarchyFromRevision ${revisionToSave} ${taxBreakDirFullPath}
-  compressTaxBreakDir ${taxBreakDirFullPath} ${targetArchiveFullPath}
+  compressTaxBreakDir ${taxBreakDirFullPath} ${targetArchiveFullPath} || removeDir ${taxBreakDirFullPath}; exit 1
   removeDir ${taxBreakDirFullPath}
   printDescriptionInfo "$(getRepoUrl)" "${revisionToSave}"
 }

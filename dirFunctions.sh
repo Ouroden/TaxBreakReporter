@@ -16,11 +16,22 @@ function removeDir()
   rm -r ${dir}
 }
 
+function checkIfCommandIsAvailable()
+{
+  local commandToCheck=$1
+
+  command -v ${commandToCheck} &> /dev/null; ERR=$?
+  if [ $ERR -ne 0 ]; then printf "${commandToCheck} is not available.\\n"; fi
+  return $ERR
+}
+
 function compressDir()
 {
   local sourceDirFullPath="$1"
   local targetArchiveFullPath="$2"
   local compressCommand="$3"
+
+  checkIfCommandIsAvailable ${compressCommand} || return 1
 
   local sourceDir=$(basename "${sourceDirFullPath}")
   local sourceDirParent=$(dirname "${sourceDirFullPath}")
@@ -30,21 +41,16 @@ function compressDir()
   startingPwd=${PWD}
   cd ${sourceDirParent}
 
-  command -v ${compressCommand} &> /dev/null
-  if [[ $? -ne 0 ]]; then
-    printf "Unable to generate ${targetArchiveFullPath}: ${compressCommand} is not available\\n"
-    return
-  fi
-
-  ${compressCommand} ${targetArchiveFullPath} ${sourceDir} > /dev/null
-  if [[ $? -ne 0 ]]; then
-    printf "Unable to generate ${targetArchiveFullPath}\\n"
+  ${compressCommand} ${targetArchiveFullPath} ${sourceDir} > /dev/null; ERR=$?
+  if [ $ERR -ne 0 ]; then
+    printf "Unable to generate ${targetArchiveFullPath}\\n";
   else
     printf "Generated: ${targetArchiveFullPath} successfully.\\n"
     sync
   fi
 
   cd ${startingPwd}
+  return $ERR
 }
 
 function compressDirWithTar()
@@ -54,6 +60,7 @@ function compressDirWithTar()
 
   local compressCommand="tar zcf"
   compressDir "${sourceDirFullPath}" "${targetArchiveFullPath}" "$compressCommand"
+  return $?
 }
 
 function compressDirWithZip()
@@ -63,6 +70,7 @@ function compressDirWithZip()
 
   local compressCommand="zip -r"
   compressDir "${sourceDirFullPath}" "${targetArchiveFullPath}" "$compressCommand"
+  return $?
 }
 
 function isDirUnderSvn()
