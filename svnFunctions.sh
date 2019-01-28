@@ -17,7 +17,7 @@ function copyChangedFilesWithHierarchyFromRevision()
 {
   local revision=$1
   local outputDir=$2
-  svn diff -c ${revision} --summarize | awk -F' ' '{ print $2 }' | xargs -I % cp -r --parents % ${outputDir}/
+  svn diff -c ${revision} --summarize | grep -v "^D" | awk -F' ' '{ print $2 }' | xargs -I % cp -r --parents % ${outputDir}/
 }
 
 function getRepoUrl()

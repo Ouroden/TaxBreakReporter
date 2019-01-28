@@ -97,6 +97,8 @@ function parse_arguments()
     branchPrefix=$(getRepo)-$(getBranch)
     archiveName="${currentMonth}-${branchPrefix}-${revisionToSave}"
     log_info "Using default archivename:${archiveName}"
+  else
+    archiveName=${archivename}
   fi
 
   if [ -z "$taxBreakMainFolder" ]; then
