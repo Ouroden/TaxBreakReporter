@@ -134,7 +134,7 @@ main()
   createDiffFromRevision ${revisionToSave} ${diffFile}
   createInfoFromRevision ${revisionToSave} ${infoFile}
   copyChangedFilesWithHierarchyFromRevision ${revisionToSave} ${taxBreakDirFullPath}
-  compressTaxBreakDir ${taxBreakDirFullPath} ${targetArchiveFullPath} || removeDir ${taxBreakDirFullPath}; exit 1
+  compressTaxBreakDir ${taxBreakDirFullPath} ${targetArchiveFullPath} #|| removeDir ${taxBreakDirFullPath} && exit 1
   removeDir ${taxBreakDirFullPath}
   printDescriptionInfo "$(getRepoUrl)" "${revisionToSave}"
 }
