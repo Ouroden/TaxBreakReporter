@@ -9,8 +9,8 @@ function createInfoFromRevision()
 {
   local revision=$1
   local infoPath=$2
-  svn info -r ${revision} > ${infoFile}
-  svn diff -c ${revision} --summarize >> ${infoFile}
+  svn info -r ${revision} > ${infoPath}
+  svn diff -c ${revision} --summarize >> ${infoPath}
 }
 
 function copyChangedFilesWithHierarchyFromRevision()

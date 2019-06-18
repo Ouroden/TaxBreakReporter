@@ -9,7 +9,7 @@ function createInfoFromRevision()
 {
   local revision=$1
   local infoPath=$2
-  git show --name-status ${revision} > ${infoFile}
+  git show --name-status ${revision} > ${infoPath}
 }
 
 function copyChangedFilesWithHierarchyFromRevision()

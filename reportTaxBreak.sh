@@ -85,7 +85,6 @@ function parse_arguments()
     log_error "No revision is picked."
     usage && exit 1
   fi
-  revisionToSave="${revisionsToSave[0]}"
 
   if (( useTar )) && (( useZip )); then
     log_error "Pick only one compression type at the time"
@@ -95,8 +94,13 @@ function parse_arguments()
   if [ -z "$archiveName" ]; then
     currentMonth="$(date +"%Y-%m")"
     branchPrefix=$(getRepo)-$(getBranch)
-    archiveName="${currentMonth}-${branchPrefix}-${revisionToSave}"
-    log_info "Using default archivename:${archiveName}"
+    revisionsToSaveStr=$(printf ".r%s" "${revisionsToSave[@]}")
+    revisionsToSaveStr=${revisionsToSaveStr:1}
+
+    archiveName="${currentMonth}-${branchPrefix}"
+    archiveNameWithRevisions="${archiveName}-${revisionsToSaveStr}"
+
+    log_info "Using default archivename:${archiveNameWithRevisions}"
   fi
 
   if [ -z "$taxBreakMainFolder" ]; then
@@ -104,11 +108,8 @@ function parse_arguments()
     log_info "Using default taxbreakdir:${taxBreakMainFolder}\n"
   fi
 
-  taxBreakDirFullPath="${taxBreakMainFolder}/${archiveName}"
-  targetArchiveFullPath="${taxBreakMainFolder}/${archiveName}"
-
-  diffFile="${taxBreakDirFullPath}/${archiveName}.diff"
-  infoFile="${taxBreakDirFullPath}/${archiveName}.info"
+  taxBreakDirFullPath="${taxBreakMainFolder}/${archiveNameWithRevisions}"
+  targetArchiveFullPath="${taxBreakMainFolder}/${archiveNameWithRevisions}"
 }
 
 function printDescriptionInfo()
@@ -128,15 +129,26 @@ main()
 {
   checkVersionControl
   parse_arguments "$@"
-
+  
   ensureDirExist ${taxBreakMainFolder}
   createDir ${taxBreakDirFullPath}
-  createDiffFromRevision ${revisionToSave} ${diffFile}
-  createInfoFromRevision ${revisionToSave} ${infoFile}
-  copyChangedFilesWithHierarchyFromRevision ${revisionToSave} ${taxBreakDirFullPath}
+
+  for revisionToSave in "${revisionsToSave[@]}"; do
+    printf "Saving revision: ${revisionToSave}...\n"
+
+    diffFile="${taxBreakDirFullPath}/${archiveName}-r${revisionToSave}.diff"
+    infoFile="${taxBreakDirFullPath}/${archiveName}-r${revisionToSave}.info"
+    taxBreakPerRevisionDirFullPath="${taxBreakDirFullPath}/r${revisionToSave}"
+    createDir ${taxBreakPerRevisionDirFullPath}
+
+    createDiffFromRevision ${revisionToSave} ${diffFile}
+    createInfoFromRevision ${revisionToSave} ${infoFile}
+    copyChangedFilesWithHierarchyFromRevision ${revisionToSave} ${taxBreakPerRevisionDirFullPath}
+  done
+
   compressTaxBreakDir ${taxBreakDirFullPath} ${targetArchiveFullPath} #|| removeDir ${taxBreakDirFullPath} && exit 1
   removeDir ${taxBreakDirFullPath}
-  printDescriptionInfo "$(getRepoUrl)" "${revisionToSave}"
+  printDescriptionInfo "$(getRepoUrl)" "${revisionsToSave[*]}"
 }
 
 main "$@"
