@@ -101,6 +101,8 @@ function parse_arguments()
     archiveNameWithRevisions="${archiveName}-${revisionsToSaveStr}"
 
     log_info "Using default archivename:${archiveNameWithRevisions}"
+  else
+    archiveNameWithRevisions=${archiveName}
   fi
 
   if [ -z "$taxBreakMainFolder" ]; then
