@@ -150,7 +150,7 @@ main()
 
   compressTaxBreakDir ${taxBreakDirFullPath} ${targetArchiveFullPath} #|| removeDir ${taxBreakDirFullPath} && exit 1
   removeDir ${taxBreakDirFullPath}
-  printDescriptionInfo "$(getRepoUrl)" "${revisionsToSave[*]}"
+  printDescriptionInfo "URL: $(getRepoUrl)" "${revisionsToSave[*]}"
 }
 
 main "$@"

@@ -17,12 +17,22 @@ function copyChangedFilesWithHierarchyFromRevision()
 {
   local revision=$1
   local outputDir=$2
-  svn diff -c ${revision} --summarize | grep -v "^D" | awk -F' ' '{ print $2 }' | xargs -I % cp -r --parents % ${outputDir}/
+
+  changedFiles=($(svn diff -c ${revision} --summarize | grep -v "^D" | awk -F' ' '{ print $2 }'))
+
+  for file in "${changedFiles[@]}"; do
+    outputFileDir=${outputDir}/$(dirname "${file}")
+    outputFilePath=${outputDir}/"${file}"
+    fileRepoPath=$(getRepoUrl)/"${file}"@${revision}
+
+    mkdir -p ${outputFileDir}
+    svn cat ${fileRepoPath} > ${outputFilePath}
+  done
 }
 
 function getRepoUrl()
 {
-  echo $(svn info 2> /dev/null | grep ^URL)
+  echo $(svn info 2> /dev/null | grep ^URL | awk '{ print $2}')
 }
 
 function getRepo()

@@ -6,17 +6,19 @@ main()
   currentMonthName=$(date +"%B")
 
   commitsList=($(svn log -r \{${currentMonthStart}\}:HEAD | grep ${USER} | awk '{print $1}'))
-  
-  for commit in "${commitsList[@]}"; do 
-    svn log -c ${commit}
-    svn diff -c ${commit} --summarize
-    printf "\n\n"
-  done
+
+  if ! [[ $1 == "fast" ]]; then
+    for commit in "${commitsList[@]}"; do
+      svn log -c ${commit}
+      svn diff -c ${commit} --summarize
+      printf "\n\n"
+    done
+  fi
 
   printf "Commits from %s:\n" $currentMonthName
   for commit in "${commitsList[@]}"; do
     commitMessageLog=$(svn log -c ${commit} | tail -n+4 | head -n-1)
-    printf "\t%s %s\n\n" ${commit} "${commitMessageLog}"  
+    printf "\t-%s %s\n\n" ${commit} "${commitMessageLog}"
   done
 }
 
